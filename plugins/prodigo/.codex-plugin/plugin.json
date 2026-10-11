@@ -42,6 +42,11 @@
     ],
     "brandColor": "#1F4FD8",
     "logo": "./assets/logo.png",
-    "composerIcon": "./assets/composer-icon.png"
+    "composerIcon": "./assets/composer-icon.png",
+    "screenshots": [
+      "./assets/screenshots/home.png",
+      "./assets/screenshots/chat-cards.png",
+      "./assets/screenshots/guide.png"
+    ]
   }
 }
