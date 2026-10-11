@@ -1,4 +1,4 @@
 ---
 type: tool_used
-tool: mcp__prodigo__analyze_blueprint
+tool: mcp__plugin_prodigo_prodigo__analyze_blueprint
 ---

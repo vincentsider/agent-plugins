@@ -1,0 +1,4007 @@
+{
+ "tools": [
+  {
+   "name": "get_profile",
+   "title": "Get the signed-in Prodigo profile",
+   "description": "Return the signed-in Prodigo profile: a stable opaque id, name, e-mail and the\nworkspace (organisation) this account belongs to. Call this first in a session.\nReturns {\"id\": \"...\", \"name\": \"...\", \"email\": \"...\", \"nickname\": \"<workspace>\"}.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {},
+    "type": "object"
+   },
+   "outputSchema": {
+    "additionalProperties": true,
+    "type": "object"
+   },
+   "annotations": {
+    "title": "Get the signed-in Prodigo profile",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "openai/profile": true,
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "list_capabilities",
+   "title": "List the connections available to this account",
+   "description": "List which connections this account has configured on Prodigo (jira,\nconfluence, pega_rules, pega_service_mcp, build_mcp) as booleans, plus where to\nconfigure a missing one. Use it to decide which workflow is possible before\nstarting a job.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {},
+    "type": "object"
+   },
+   "outputSchema": {
+    "additionalProperties": true,
+    "type": "object"
+   },
+   "annotations": {
+    "title": "List the connections available to this account",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "optimize_user_story",
+   "title": "Optimize a user story",
+   "description": "Optimize a single user story through ARCHY's agent swarm.\n\nReturns the optimized story plus priority score and reasoning.\nPass `rag_session_id` from `ingest_reference_pdf` to ground the swarm in a PDF.\n`conversation_id`/`user_id` (injected by the agent) enforce grounding in the\nconnected Pega project, if any \u2014 including a project the user connected in an\nearlier conversation.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story": {
+      "type": "string"
+     },
+     "definition_of_ready": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "sme_instructions": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "rag_session_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "enable_rag_lookup": {
+      "default": false,
+      "type": "boolean"
+     },
+     "example_user_story": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Optimize a user story",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "optimize_jira_epic_subtasks",
+   "title": "Optimize the stories of a Jira epic",
+   "description": "Run ARCHY's full Jira batch: fetch sub-tasks, optimize each, write descriptions back,\ngenerate meta-stories for parent stages, and update parents.\n\nJira credentials prefer the requesting user's stored connection (resolved by\n`user_id`, injected by the agent) and fall back to the environment (JIRA_HOST,\nJIRA_EMAIL, JIRA_API_TOKEN, PROJECT_KEY). Override the project by passing\n`project_key`. `processing_scope` accepts \"all\" or \"newest\".\n\nSAFE DEFAULT \u2014 optimizes ONLY the LAST sub-task (the user story). This is the\nSimplyDash demo (build the full backlog, then optimize the last sub-task) and\na safe default for any optimize: it never runs the whole project, which on a\nreal backlog (100+ sub-tasks \u00d7 ~3-4 min each via o3) would run for hours and\nblow timeouts. To optimize the ENTIRE backlog you MUST pass `optimize_all=true`\n(only when the user explicitly asks to optimize every story). `optimize_limit=N`\noptimizes the FIRST N. `demo_mode` is accepted for compatibility but is no\nlonger required \u2014 the last-sub-task default already gives the demo behavior.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "definition_of_ready": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "sme_instructions": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "processing_scope": {
+      "default": "all",
+      "type": "string"
+     },
+     "enable_rag_lookup": {
+      "default": false,
+      "type": "boolean"
+     },
+     "rag_session_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "example_user_story": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "openai_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "optimize_limit": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "demo_mode": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "optimize_all": {
+      "default": false,
+      "type": "boolean"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Optimize the stories of a Jira epic",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_optimize_jira_epic_subtasks",
+   "title": "Start optimizing a Jira epic's stories",
+   "description": "Start the Jira optimize batch as a BACKGROUND job; returns a `task_id` IMMEDIATELY.\n\nPREFER THIS over `optimize_jira_epic_subtasks` (which BLOCKS for the whole batch and,\non a multi-minute run, can drop the chat stream). Each story takes ~2-3 minutes, so\nthis returns at once and you POLL `get_jira_batch_status(task_id)` until it reports\ndone \u2014 that keeps the chat responsive and drives the live \"X/Y stories\" progress card.\nSame parameters / safe default (last sub-task only unless `optimize_all`/`optimize_limit`).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "definition_of_ready": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "sme_instructions": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "processing_scope": {
+      "default": "all",
+      "type": "string"
+     },
+     "enable_rag_lookup": {
+      "default": false,
+      "type": "boolean"
+     },
+     "rag_session_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "example_user_story": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "openai_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "optimize_limit": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "demo_mode": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "optimize_all": {
+      "default": false,
+      "type": "boolean"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Start optimizing a Jira epic's stories",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_jira_batch_status",
+   "title": "Get epic optimization status",
+   "description": "Check a `start_optimize_jira_epic_subtasks` batch by its `task_id`.\n\nReturns `running` with the live `X/Y stories` count + elapsed seconds while in\nprogress (poll again shortly), or the final summary once complete.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get epic optimization status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "create_and_optimize_user_story",
+   "title": "Create an optimized story in Jira",
+   "description": "Optimize a single user story through ARCHY's swarm AND create it as a new issue\nin the project's Jira backlog (synchronous \u2014 returns the result in one call).\n\nNOTE: the swarm optimization can take 1-3 minutes. If your MCP client enforces a short\nper-tool timeout (Codex defaults to 60s), either raise it (`tool_timeout_sec`) or use\nthe non-blocking `start_create_and_optimize_user_story` + `get_user_story_status` pair.\n\nJira credentials are read from the environment (JIRA_HOST, JIRA_EMAIL, JIRA_API_TOKEN,\nPROJECT_KEY). Override the target project with `project_key`. The issue type is\nauto-discovered for the project (Story / User Story / Task as available) \u2014 pass\n`issue_type` only to force a specific one. If `summary` is omitted it is derived from\nthe optimized story. Pass `rag_session_id` from `ingest_reference_pdf` with\n`enable_rag_lookup=true` to ground the swarm in a PDF. Pass\n`story_format_mode=\"jira_style\"` to mirror a reference story's structure AND tone,\nor `story_format_mode=\"hybrid\"` to keep Prodigo's own structure and only adapt\ntone/vocabulary (quality checks always apply either way) \u2014 normally forced by the\nconversation's story format setting, not something you need to pass yourself.\n\nReturns the new issue key, a browse URL, and the optimized content. If creation fails\nafter a successful optimization, the optimized text is still returned so no work is lost.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story": {
+      "type": "string"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "definition_of_ready": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "sme_instructions": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "rag_session_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "enable_rag_lookup": {
+      "default": false,
+      "type": "boolean"
+     },
+     "example_user_story": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "issue_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "openai_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "story_format_mode": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Create an optimized story in Jira",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_create_and_optimize_user_story",
+   "title": "Start creating an optimized story in Jira",
+   "description": "Start optimizing a single user story AND creating it in the Jira backlog as a\nBACKGROUND job, returning immediately with a `task_id` (no waiting).\n\nUse this instead of `create_and_optimize_user_story` when your MCP client has a short\ntool timeout, since the swarm optimization can take 1-3 minutes. Then poll\n`get_user_story_status(task_id)` until it reports done; it returns the new issue key,\nURL, and optimized story. Same parameters as `create_and_optimize_user_story`.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story": {
+      "type": "string"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "definition_of_ready": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "sme_instructions": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "rag_session_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "enable_rag_lookup": {
+      "default": false,
+      "type": "boolean"
+     },
+     "example_user_story": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "issue_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "openai_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "story_format_mode": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Start creating an optimized story in Jira",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_user_story_status",
+   "title": "Get story creation status",
+   "description": "Check a background `start_create_and_optimize_user_story` job by its `task_id`.\n\nReturns 'running' (poll again shortly), the final result (issue key + URL + optimized\nstory) once done, or an error message if it failed.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get story creation status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_jira_story",
+   "title": "Read a Jira story",
+   "description": "Read a Jira story by its key (e.g. `PPT-5589`) and return it as markdown:\ntitle, description and acceptance criteria. Use this whenever the user names an\nissue key \u2014 including one YOU created earlier with create_and_optimize_user_story \u2014\ninstead of asking them to paste the story. `project_key`/`user_id` are injected.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story_key": {
+      "type": "string"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story_key"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Read a Jira story",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "generate_pega_technical_design",
+   "title": "Generate a Pega technical design",
+   "description": "Generate a Pega Infinity 24 technical design (markdown) for a user story, GROUNDED\nin the Pega project connected to this conversation.\n\nGive EITHER `story` (the full story text) OR `story_key` (a Jira key such as\n`PPT-5589` \u2014 the story is read from Jira, so NEVER ask the user to paste a story\nthat already exists in Jira; passing the bare key as `story` also works).\n\nWhen a Pega project is bound to the conversation (connect_pega_project), the design is\nbuilt against that application's REAL rules: existing rules/classes are reused and listed\nunder \"Existing artefacts reused\"; \"Artefacts to create\" holds only genuinely new\nartefacts. The first line of the design says whether it was grounded and in which\nproject. `model` overrides the configured model. `project_key`/`user_id`/\n`conversation_id` are injected by the agent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story": {
+      "default": "",
+      "type": "string"
+     },
+     "story_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Generate a Pega technical design",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "ingest_reference_pdf",
+   "title": "Index a reference document",
+   "description": "Index a local PDF for RAG so subsequent `optimize_user_story` calls can ground answers\nin it. Returns a `rag_session_id` to pass back in with `enable_rag_lookup=True`.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "pdf_path": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "pdf_path"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Index a reference document",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "ingest_pega_project",
+   "title": "Index a connected Pega application",
+   "description": "Ground a freshly-fetched Pega project in RAG for THIS conversation, AND for\nthis user's future conversations too.\n\nCall this right after the pega-connector's `fetch_project` returns: pass its\n`app_id` and `rag_session_id` \u2014 BOTH are plain strings from the fetch result.\nDo NOT pass a file path: the manifests directory is resolved SERVER-SIDE from\nthe shared export volume (`PEGA_EXPORT_DIR/manifests/<app_id>`). Indexes the\nproject's rules into the conversation's RAG session AND records a durable binding\nso that EVERY subsequent story this conversation creates is automatically grounded\nin this project's real rules + dependency graph \u2014 no need for the model to thread\n`rag_session_id` or call the `pega_*` tools. This is a ONE-TIME action per user,\nlike connecting the Pega operator login: once bound here, EVERY future conversation\nfor this user inherits it automatically too \u2014 do not tell the user they need to\nreconnect the project in a new chat. `conversation_id`/`user_id` are injected by\nthe agent. Isolation is per `rag_session_id`.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "app_id": {
+      "type": "string"
+     },
+     "rag_session_id": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "rag_session_id",
+     "app_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Index a connected Pega application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "connect_pega_project",
+   "title": "Connect a Pega application",
+   "description": "Connect a Pega PROJECT end-to-end in ONE call: fetch its rules (METERED,\nbillable \u2014 confirm with the user before calling), build the export + dependency\ngraph, bind the project to this conversation, and index it for grounding.\n\nThis replaces the old two-step \"fetch_project then ingest_pega_project\" flow \u2014\neverything after the fetch is automatic; a fetch failure leaves no binding.\n`application`/`version` come from `list_pega_applications` (confirm the exact\nname + version with the user first). `conversation_id`/`user_id` are injected\nby the agent. Returns a summary with rule/edge counts, or an actionable error\n(e.g. the Pega instance is unreachable, or the export must be uploaded from\ninside the client network).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "application": {
+      "type": "string"
+     },
+     "version": {
+      "type": "string"
+     },
+     "rulesets": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "version",
+     "application"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Connect a Pega application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "ingest_blueprint",
+   "title": "Read a Pega Blueprint",
+   "description": "Parse a Pega Blueprint into a PREVIEW Epic -> Story -> SubTask tree. NO Jira writes.\n\nAccepts a blueprint as a dict or a JSON string, validates it is a Pega Blueprint\n(pyCandidateCaseTypes at root or under pyDADInfo), transforms it via ARCHY's pure\nparser, and returns human-readable markdown: the tree (epics -> stories -> sub-tasks\nwith titles), aggregate stats (case-types/stages/steps/skipped), and any parse\nwarnings. This tool performs ZERO Jira calls \u2014 use `create_backlog_from_blueprint`\nto actually create the backlog. `project_key` is accepted for symmetry but unused\nhere (no writes happen).",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "blueprint": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       }
+      ]
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "blueprint"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Read a Pega Blueprint",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "analyze_blueprint",
+   "title": "Analyze a Pega Blueprint",
+   "description": "Gap-analyse a Pega Blueprint against Pega case-design best practices. NO Jira writes.\n\nRun this BEFORE building the backlog when the user wants a completeness check\n(\"garbage in = garbage out\" \u2014 a weak blueprint yields weak user stories). Accepts a\nblueprint as a dict or JSON string and returns a markdown report: an overall\ncompleteness score, per-case-type strengths/gaps, and prioritised recommendations,\ngrounded in Pega Academy best practices (single business outcome with a clear\ndescription; a starting AND a resolution stage; alternate/exception stages; steps\ndetailed with descriptions; a data model with fields; SLAs; decision logic).\n\nThe report language MATCHES the blueprint's language (French blueprint -> French\nreport; otherwise English). This tool performs ZERO Jira calls.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "blueprint": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "required": [
+     "blueprint"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Analyze a Pega Blueprint",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_blueprint_questions",
+   "title": "Get open questions about a Blueprint",
+   "description": "Return ONLY the clarifying questions for a blueprint (for the GUIDED flow).\n\nUnlike analyze_blueprint, this returns NO completeness score, NO structural\nrecommendations and NO \"fix in Pega\" CTA \u2014 just the questions whose answers make\nthe user stories complete and unambiguous (undefined roles/approvers, decision\ncriteria, exception paths, SLAs), in the blueprint's own language. Returns a JSON\nblock the guided flow uses to ask the user. NO Jira writes.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "blueprint": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "required": [
+     "blueprint"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get open questions about a Blueprint",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "create_backlog_from_blueprint",
+   "title": "Create a Jira backlog from a Blueprint",
+   "description": "Create the full Epic -> Story -> SubTask backlog from a Pega Blueprint in Jira.\n\nParses the blueprint, connects to Jira (creds from JIRA_HOST/JIRA_EMAIL/\nJIRA_API_TOKEN/PROJECT_KEY env; override the project with `project_key`), and creates\nthe hierarchy with correct parent linkage (Stories under their Epic, Sub-tasks under\ntheir Story). Returns markdown listing the created issue keys, per-level counts,\nbrowse URLs, and any errors/warnings \u2014 the resolved project key is echoed back so you\ncan confirm the write target (threat T-03-08).\n\nSet `dry_run=True` to PREVIEW counts with ZERO writes. `concurrency` bounds the number\nof in-flight creates per level (default 6).\n\n`demo_mode` is accepted for API compatibility but NO LONGER slices the create:\nthe SimplyDash demo flow builds the FULL structure here and then optimizes the\nLAST sub-task in a SEPARATE optimize_jira_epic_subtasks(demo_mode=true) call.\nSo this tool always creates the entire Epic/Story/SubTask tree.\n\nNOTE: this is a single synchronous call. A typical blueprint (a handful of epics with\ntheir stages/steps) completes well inside an MCP client's tool timeout because the\ncreates run concurrently per level. For a very large blueprint that might exceed a\nshort client timeout, parse first with `ingest_blueprint` to gauge size; a durable\nstart/poll variant can be added later if needed (the existing\nstart_create_and_optimize_user_story + get_user_story_status pair is the pattern).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "blueprint": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       }
+      ]
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "dry_run": {
+      "default": false,
+      "type": "boolean"
+     },
+     "concurrency": {
+      "default": 6,
+      "type": "integer"
+     },
+     "demo_mode": {
+      "default": false,
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "blueprint"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Create a Jira backlog from a Blueprint",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_reference_stories",
+   "title": "Get reference stories from Jira",
+   "description": "Fetch recent well-formed Jira stories to use as the swarm's `example_user_story`.\n\nConnects to Jira (creds from env; override the project with `project_key`), fetches\nrecent non-sub-task stories that have a description (newest first), and returns\nmarkdown listing each story plus the single BEST `example_user_story` (a canonical\n\"As a ...\" form when available) clearly labeled so you can pass it straight into\n`optimize_user_story` / `optimize_jira_epic_subtasks`. Pass a custom `jql` to override\nthe default selection (read-only, runs under the authenticated user's permissions).\n`limit` caps how many stories are fetched (default 10).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "jql": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "limit": {
+      "default": 10,
+      "type": "integer"
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get reference stories from Jira",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "verify_story",
+   "title": "Verify a story against the running application",
+   "description": "Verify a Jira story against the running Pega app \u2014 END TO END, in ONE call.\n\nThis single tool does the WHOLE job server-side: reads the story's acceptance\ncriteria, drives the Pega app in a headless browser (navigate + snapshot),\njudges each criterion against the on-screen evidence (PASS / GAP / FAIL with\nanalysis, proof and remediation), posts a detailed report to Jira, and saves it\nto the verification dashboard. You (the model) do NOT drive the browser yourself\n\u2014 just call this once and relay the returned summary in the user's language.\nReturns a markdown summary (or a clear blocker, e.g. a login wall).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story_key": {
+      "type": "string"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story_key"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Verify a story against the running application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_verify_backlog",
+   "title": "Start verifying a backlog",
+   "description": "Verify the Jira backlog against the Pega app \u2014 BACKGROUND batch.\n\nReturns a task_id IMMEDIATELY; the app polls get_verify_backlog_status and shows\na live \"k/N verified\" card. It scans the backlog and verifies every story that\nHAS acceptance criteria (i.e. has been written/optimized) \u2014 skipping raw,\nun-optimized sub-tasks fast (no browser drive). Each verified story is checked\nserver-side (browser + judged criteria + screenshot proof) and saved to the\ndashboard. `limit` caps how many stories-with-criteria to verify (default: all).\nYou (the model) call this ONCE and STOP \u2014 do not poll; the app drives progress.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "limit": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Start verifying a backlog",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_verify_backlog_status",
+   "title": "Get backlog verification status",
+   "description": "Check a start_verify_backlog batch by task_id. Live 'k/N stories' + summary.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get backlog verification status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_retrodoc",
+   "title": "Start documenting an existing application",
+   "description": "Reverse-document a RUNNING Pega app \u2014 BACKGROUND crawl (Retrodoc).\n\nSOURCE (``mode``): \"auto\" (default) uses the RULES of the Pega project connected to this\nconversation (or to the user) PLUS the live screen exploration when a rule export exists\n\u2014 the rules give the authoritative process, the screens the real UI \u2014 and says so in its\nreply; without a connected project it documents from the screens only. \"screens\" forces\nscreens-only; \"combined\" asks for rules+screens and falls back to screens (explained).\n``language`` (\"fr\"|\"en\", defaults to the UI language the app injects) is the language of\nthe generated document; ``audience`` \"business\" (default, the DSF) or \"technical\".\n\nLogs in as EVERY connected operator (one per business role \u2014 Settings promises\n\"connect one operator per business role so the documentation ... see[s] the whole\nprocess, not just one role's screens\"), crawls each role's screens SEQUENTIALLY\n(safety-gated: never mutating actions; full interactive crawling requires\n``uat_attested`` \u2014 a non-prod/UAT with stubbed integrations \u2014 else it degrades to\npassive read-only), describes each unique screen, and synthesizes ONE merged\ndocument + backlog covering every role. Returns a task_id IMMEDIATELY; the app\npolls get_retrodoc_status and shows a live \"k/N screens\" card. Call this ONCE and\nSTOP \u2014 do not poll; the app drives progress.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "role_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "uat_attested": {
+      "default": false,
+      "type": "boolean"
+     },
+     "max_screens": {
+      "default": 150,
+      "type": "integer"
+     },
+     "mode": {
+      "default": "auto",
+      "type": "string"
+     },
+     "language": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "audience": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Start documenting an existing application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_retrodoc_status",
+   "title": "Get documentation status",
+   "description": "Check a start_retrodoc crawl by task_id. Live 'k/N screens' + summary.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get documentation status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_retrodoc_document",
+   "title": "Get the generated documentation",
+   "description": "Return the generated retrodoc document (markdown) for a crawl / conversation.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get the generated documentation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_build",
+   "title": "Build a design into a Pega branch",
+   "description": "Build a technical design's rules into a Pega BRANCH via the Build MCP (F6).\n\nDEFERRED RULES ARE NOT THE END: after get_build_report lists what needs the user's input\n(e.g. a Connect-REST endpoint), call this AGAIN with the SAME `branch` and `rule_inputs` \u2014\na JSON array like provide_rule_inputs' ([{\"rule_name\",\"endpoint_url\",\"http_method\"?,\n\"auth_profile\"?,\"applies_to\"?}]). The rules that got inputs are built into that EXISTING\nbranch (its change request is reused \u2014 never a second branch); nothing else is re-created.\n\n`application` is the Pega application to build INTO (alias, label or name, e.g.\n`wr-bank`). The user controls this via Settings \u2192 Pega application; the agent\ninjects it (or the alias from `pega_app_url`) so it is NEVER hardcoded. If the\nuser names a different application, pass it here.\n\n`model` is the conversation's selected model alias (injected by the agent); the\nrule-logic generation uses it, so the ONE model the user picks drives the build and\na sovereign pick stays cloud-free. `detail` controls how much logic is authored:\n\"logic\" (default) generates REAL\nrule bodies (activity steps, data-transform mappings, decision-table rows, when\nconditions, e-mail bodies), grounded in the Pega authoring skills, and falls back\nto a shell per rule if generation or authoring fails; \"shell\" authors minimal\nplaceholder rules only. Either way the branch is never merged \u2014 it is a draft for\nhuman review.\n\nParses the design's \"Artefacts to create\" table, authors the buildable rules\n(Property / Validate / Service Level \u2014 proven first-pass \u2014 plus Activity, Data\nTransform, When, Decision Table and Correspondence as minimal valid SHELLS the\ndeveloper completes in Dev Studio) into a governed branch with create-rule, and\nDEFERS structural/UI/integration types (Case Type, Flow, Section, Data Page,\nConnect-REST, flow shapes ...) with a reason. If NOTHING is buildable, no branch is\nopened at all and the result says so. NEVER MERGES \u2014 the branch is the human approval gate. When no live Build MCP\nis configured, or dry_run=True, it SIMULATES and still returns a full report. Returns\na task_id IMMEDIATELY \u2014 EXCEPT when it answers \"Nothing to build\" (a grounded design\nfound every artefact already exists): then there is NO job, NO task_id, nothing to poll\nand no report to open \u2014 relay that sentence and stop. Otherwise; the app polls get_build_status (\"k/N rules\") and opens the\nbuild report at the end. Call this ONCE and STOP \u2014 do not poll; the app drives it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "design": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "branch": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "applies_to_class": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "origin_ruleset": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "application": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "detail": {
+      "default": "logic",
+      "type": "string"
+     },
+     "model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "dry_run": {
+      "default": false,
+      "type": "boolean"
+     },
+     "rule_inputs": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "design"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Build a design into a Pega branch",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_build_status",
+   "title": "Get build status",
+   "description": "Check a start_build run by task_id. Live 'k/N rules' + summary.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "task_id": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get build status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_build_report",
+   "title": "Get build report",
+   "description": "Return the F6 build report (markdown) for a build run / conversation.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get build report",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_remediation_loop",
+   "title": "Start the build, judge and fix loop",
+   "description": "Close the loop on a built branch (F7): JUDGE it, feed gaps back to the builder, REBUILD.\n\nRuns the independent Judge (a DIFFERENT model, browser evidence) against the branch in a\nBRANCH-AWARE context (Pega \"Branch development\" + Preview App \u2014 the only context where\nunmerged branch rules render), feeds its GAP/CONTRADICTED findings back to F6 as scoped\nfixes, rebuilds into the SAME branch, and re-judges \u2014 up to max_iterations (default 2,\nhard cap 3), stopping on all-pass / no-improvement / no-derivable-fix / spend cap. NEVER\nMERGES. ``app_url`` must be the branch-aware Preview URL for the Judge to see branch rules;\nwithout it the Judge degrades to a rules-only cross-check. Returns a task_id IMMEDIATELY;\npoll get_remediation_status, then get_remediation_report. Call ONCE and STOP.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "design": {
+      "type": "string"
+     },
+     "branch": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "story_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "max_iterations": {
+      "default": 2,
+      "type": "integer"
+     },
+     "judge_mode": {
+      "default": "rules",
+      "type": "string"
+     },
+     "dry_run": {
+      "default": false,
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "design",
+     "branch"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Start the build, judge and fix loop",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_remediation_status",
+   "title": "Get remediation status",
+   "description": "Check a start_remediation_loop run by task_id.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get remediation status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_remediation_report",
+   "title": "Get remediation report",
+   "description": "Return the F7 remediation report (markdown) for a run / conversation.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get remediation report",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_migration_plan",
+   "title": "Plan a migration into Pega",
+   "description": "Produce a MIGRATION PLAN from a technical design and PAUSE for approval \u2014 authors\nNOTHING. Reconciles each proposed rule against the TARGET app's existing ruleset\n(create/update/skip/conflict), orders rules into dependency waves, and stores a durable,\nreviewable plan. Approve it with approve_plan to start the durable build.\n\n`design` must be the markdown from generate_pega_technical_design. `app_id` is the export\nid of the target app to reconcile against (e.g. 'WRBANK!01.01.01'); omit it to skip\nreconciliation (everything becomes a create). Env PEGA_WORK_CLASS / BUILD_ORIGIN_RULESET\nwin over the class/ruleset params (single-app deployments).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "design": {
+      "type": "string"
+     },
+     "branch": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "origin_ruleset": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "applies_to_class": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "application": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "source_app": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "target_app": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "design"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Plan a migration into Pega",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_plan_status",
+   "title": "Get migration plan status",
+   "description": "Status of a migration plan + its durable execution (poll after approve_plan).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "plan_id": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "plan_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get migration plan status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "approve_plan",
+   "title": "Approve a migration plan",
+   "description": "Approve a migration plan and START its durable build (never merges the branch).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "plan_id": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "plan_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Approve a migration plan",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_plan_report",
+   "title": "Get migration plan report",
+   "description": "A readable report of a migration plan: per-rule verdict/wave/status PLUS the rules that\nneed YOUR input to finish (so nothing is ever silently dropped \u2014 collaborate to reach 100%).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "plan_id": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "plan_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get migration plan report",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "provide_rule_inputs",
+   "title": "Provide inputs for deferred rules",
+   "description": "Supply the inputs a plan's deferred rules needed, then BUILD them into the SAME branch \u2014\nthe collaboration close-the-loop toward 100% (#133). Call this after get_plan_report lists\nrules that 'need your input'; it NEVER opens a new branch and NEVER merges.\n\n`rule_inputs` is a JSON array; each item names one rule and its inputs. For an integration\nrule (Connect-REST) the endpoint is all that's required:\n  [{\"rule_name\": \"FetchLatestTemplate\", \"endpoint_url\": \"https://api.bank/tpl\",\n    \"http_method\": \"GET\", \"auth_profile\": \"BankAuth\",\n    \"applies_to\": \"MyOrg-App-Data-Template\", \"response_property\": \"DataSource.pyResponseData\"}]\n\nOnly `rule_name` + `endpoint_url` are mandatory for an integration. Rules that need a config\nchange instead (coverage-gated types, or Dev-Studio enrichment) are reported back, not\nforce-built. Poll get_plan_report to see the updated per-rule outcome.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "plan_id": {
+      "type": "string"
+     },
+     "rule_inputs": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "plan_id",
+     "rule_inputs"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Provide inputs for deferred rules",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "list_built_branches",
+   "title": "List branches built by Prodigo",
+   "description": "List the Pega branches Prodigo authored into (F6/F7/F8), with their lifecycle status.\n\nShows what was built into each branch and where it is (built -> judged -> merged /\ndiscarded). Deletion is a Dev Studio action \u2014 the Build MCP has no delete tool \u2014 so\nthis is the review/cleanup list, not a delete surface.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "List branches built by Prodigo",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "set_branch_status",
+   "title": "Record a branch as merged or discarded",
+   "description": "Advance a recorded branch's lifecycle status: built | judged | merged | discarded.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "branch": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "branch",
+     "status"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Record a branch as merged or discarded",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "start_migration",
+   "title": "Execute an approved migration plan",
+   "description": "Accelerate a legacy migration (F8): reverse-doc a SOURCE app, rebuild onto a TARGET.\n\nRetrodocs the SOURCE app READ-ONLY (never writes it), turns each recovered story into a\ntechnical design, BUILDS those rules onto a SEPARATE TARGET branch (F6), and \u2014 if a\n``target_preview_url`` is given \u2014 judges the target against the source in comparison\nmode. Produces a source->target traceability record with gaps flagged. NEVER merges;\nREFUSES to build onto the source. Returns a task_id IMMEDIATELY; poll\nget_migration_status, then get_migration_report. Call ONCE and STOP.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "source_app_url": {
+      "type": "string"
+     },
+     "target_branch": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "role_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "max_stories": {
+      "default": 8,
+      "type": "integer"
+     },
+     "max_screens": {
+      "default": 60,
+      "type": "integer"
+     },
+     "target_preview_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "dry_run": {
+      "default": false,
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "target_branch",
+     "source_app_url"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Execute an approved migration plan",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_migration_status",
+   "title": "Get migration status",
+   "description": "Check a start_migration run by task_id.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get migration status",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_migration_report",
+   "title": "Get migration report",
+   "description": "Return the F8 migration report (markdown) for a run / conversation.",
+   "inputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "type": "object"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get migration report",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "create_backlog_from_retrodoc",
+   "title": "Create a Jira backlog from documentation",
+   "description": "Push the retrodoc-generated backlog to Jira (reuses the blueprint write engine).\n\n``dry_run=True`` previews counts without writing. Set ``dry_run=False`` to create\nthe Epics/Stories/Sub-tasks in the configured Jira project.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "task_id": {
+      "type": "string"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "dry_run": {
+      "default": true,
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "task_id"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Create a Jira backlog from documentation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "document_pega_from_rules",
+   "title": "Document an application from its rules",
+   "description": "Document an EXISTING Pega app from its RULE EXPORT, enriched by a live screen crawl.\n\nReads the connector's rule export (case types, ordered stages, flows, user steps,\ncalculation and decision rules, reports, data) and synthesizes a document + a\nready-to-build backlog, rendered as the retrodoc document. ``app_name`` selects the\nexport (e.g. 'WRBank').\n\nCOMBINED BY DEFAULT for a real Pega app: when a portal URL + stored credentials are\navailable, a bounded READ-ONLY (passive, navigation-only) crawl of the running portal is\nrun and its real screens ground the step detail; the rules supply the authoritative\nprocess/logic. Falls back to the rules-only document when the portal is unreachable. Set\n``combine_screens=false`` to force rules-only.\n\n``audience`` = \"business\" produces the **Document de Sp\u00e9cification Fonctionnelle (DSF)**\n\u2014 a functional spec for business readers, ZERO Pega vocabulary, process/actors-centric,\nwith a process diagram; \"technical\" (default) produces the as-built technical spec for\nthe Pega team. ``language`` = \"fr\" | \"en\" (defaults to English). Each (audience,\nlanguage, variant) is generated and persisted independently.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "audience": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "language": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "combine_screens": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "role_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Document an application from its rules",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "audit_mcp_readiness",
+   "title": "Audit a Service MCP for agent readiness",
+   "description": "Audit an EXISTING Pega project for safe exposure over an Infinity 26 Service MCP endpoint.\n\nRuns entirely on the connector's rule export (works on ANY Pega version). Classifies\nevery candidate exposable artifact (case type, flow, flow action, automation, report,\ndata page, data model) as RECOMMENDED_EXPOSE / EXPOSE_WITH_GUARDRAIL / DO_NOT_EXPOSE /\nINSUFFICIENT_INFORMATION, each with a written reason grounded in the dependency graph.\nA DO_NOT_EXPOSE / guardrail verdict shows the concrete reaching path from the artifact\nto the external integration, correspondence or notification rule it can trigger, and\nRECOMMENDED artifacts get a draft MCP tool definition with justified behaviour hints.\n\n``app_name`` selects the export (e.g. 'WRBank'); if omitted it is resolved from the\nproject bound to this conversation. ``audience`` = \"business\" produces a risk/governance\nreport with zero Pega vocabulary; \"technical\" (default) includes the draft tool\ndefinitions. ``language`` = \"fr\" | \"en\".",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "audience": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "language": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Audit a Service MCP for agent readiness",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "judge_mcp_tools",
+   "title": "Judge MCP tool descriptions",
+   "description": "Measure how reliably an AI agent selects the RIGHT MCP tool from a set of tool\ndescriptions (feature F2). For each tool it generates realistic task prompts, asks a\nSEPARATE model (a different alias from any description writer -- never grading its own\nhomework) to pick a tool, and reports per-tool selection accuracy as stacked counts\n(correct / wrong tool / no tool / ambiguous), with a specific diagnosis (name collision,\nvague verb, missing parameter semantics, overlapping scope with a named sibling) for any\ntool below the bar. Pass ``tool_manifest`` (a list of {name, description, params}); if\nomitted, the tools are taken from the MCP Readiness Audit's draft definitions for the\nbound Pega project.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "tool_manifest": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "tasks_per_tool": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Judge MCP tool descriptions",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "optimize_mcp_tool_descriptions",
+   "title": "Rewrite MCP tool descriptions",
+   "description": "Rewrite a set of MCP tool names/descriptions for reliable agent selection, and PROVE the\nimprovement (feature F2). Enforces a consistent action-oriented naming scheme, a one-sentence\npurpose, explicit parameter descriptions with an example, and a stated return shape, then runs\nthe selection-accuracy harness BEFORE and AFTER so the delta per tool is measurable. Pass\n``tool_manifest``; if omitted, the tools come from the MCP Readiness Audit's draft definitions\nfor the bound Pega project. Returns the before/after report plus the optimised definitions.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "tool_manifest": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "tasks_per_tool": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Rewrite MCP tool descriptions",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "connect_service_mcp",
+   "title": "Connect a Pega Service MCP",
+   "description": "Register a Pega Service MCP endpoint for this user (F5) \u2014 a ONE-TIME action.\n\nGeneric: pass ANY project's Infinity 26 Service MCP endpoint URL. Registered ONCE,\nit is remembered for this user and reused automatically in EVERY future conversation\n(the same way the connected Pega operator/app URL already is) \u2014 never register it\nagain unless the endpoint itself changes. After this, stories are grounded in the\ntools the application already exposes, any story-relevant capability that exists as\na rule but is NOT exposed is flagged as a blocker, and start_retrodoc / the MCP\nreadiness tools automatically use it. Does NOT require connecting/ingesting a Pega\nrules project first \u2014 this is a separate, independent capability. An unreachable\nendpoint is still saved (Pega/network hiccups are transient); it simply grounds\nnothing until it becomes reachable.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "endpoint_url": {
+      "type": "string"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "endpoint_url"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Connect a Pega Service MCP",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "judge_document",
+   "title": "Judge a document against the live application",
+   "description": "Have an INDEPENDENT judge verify the generated documentation against the REAL app.\n\nThis is the \"check of the check\": a SEPARATE agent (a different model, a skeptical prompt)\nre-inspects the running application and rules each documentation claim CONFIRMED /\nCONTRADICTED / GAP / UNVERIFIABLE, grounded in what it actually observes on screen \u2014 NOT\nin the facts the document's author used. It never grades its own homework. Screen-checkable\nclaims are verified against the live app (strong); structural claims are cross-checked\nagainst the rules (weak, same source, flagged as such); unreachable/unobservable claims are\nhonestly marked UNVERIFIABLE. Returns a short summary; the app renders the full evidence\nreport (per-claim verdicts + the screenshots the judge looked at). Call this AFTER the\ndocumentation exists, when the user asks to verify / audit / check / \"faire v\u00e9rifier\" it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "role_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Judge a document against the live application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "judge_backlog",
+   "title": "Judge a backlog against the live application",
+   "description": "Independently verify the Jira BACKLOG STORIES against the running app \u2014 BACKGROUND.\n\nThe \"check of the check\" for the backlog: an INDEPENDENT judge (a different model, grounded\nin the LIVE app) reads each written user story's acceptance criteria and rules them\nCONFIRMED/CONTRADICTED/GAP/UNVERIFIABLE against what it observes on screen \u2014 it never grades\nits own work. Crawls the app ONCE and reuses that evidence for every story (efficient).\nReturns a task_id IMMEDIATELY; the app polls get_verify_backlog_status and shows a live\n\"k/N verified\" card, and each result lands on the Verification dashboard + the per-story\nbacklog badge. `limit` caps stories-with-criteria. ``language`` (\"en\" | \"fr\" | \"ar\",\ndefaults to the UI language the app injects) is the language the judge writes its\nanalyses in. Call this ONCE and STOP \u2014 do not poll.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "app_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pega_app_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "role_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "limit": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "language": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Judge a backlog against the live application",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "verification_report",
+   "title": "Get a verification report",
+   "description": "Persist + post a DETAILED story verification report (PASS / FAIL / GAP per criterion).\n\nEach item in `criteria` should be a dict with:\n  - id        e.g. \"AC1\"\n  - text      the acceptance criterion\n  - status    PASS | FAIL | GAP  (GAP = committed but not implemented)\n  - analysis  WHY this verdict \u2014 what was checked and what was found on screen\n  - remediation  what to do to close a GAP/FAIL (the concrete fix); \"\" for PASS\n  - evidence  the concrete proof: the DOM/snapshot finding (e.g. the element/\n              test-id found, or \"no element matching X in the snapshot\")\nWrites a detailed report to Jira as an ADF comment AND persists it (with all\nfields + timestamp) to verification_results for the dashboard + pane badges.\nCall this ONCE at the end of a verification run.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story_key": {
+      "type": "string"
+     },
+     "overall": {
+      "type": "string"
+     },
+     "criteria": {
+      "items": {},
+      "type": "array"
+     },
+     "project_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "evidence": {
+      "anyOf": [
+       {
+        "items": {},
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story_key",
+     "overall",
+     "criteria"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get a verification report",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "learn_house_style",
+   "title": "Learn the client's story house style",
+   "description": "Learn how THIS client writes user stories, from their own existing stories,\nand use that standard for every story from now on.\n\nSources (combine any): Confluence `page_ids` or a `cql` query (needs a\nConfluence connection); Jira `jira_keys` or a `jira_jql` query (needs the Jira\nconnection); or `pasted` \u2014 raw story texts the user gave you directly. Prefer\n3-5 stories from DIFFERENT journeys. Reads their format AND reasoning method,\nshows what it understood, and stores it so it can be corrected.\n`conversation_id`/`user_id` are injected by the agent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "page_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "cql": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "jira_keys": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "jira_jql": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "pasted": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "limit": {
+      "default": 5,
+      "type": "integer"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Learn the client's story house style",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "get_house_style",
+   "title": "Get the learned house style",
+   "description": "Show the house style currently learned for this client \u2014 the format and the\nreasoning method every new story follows. `user_id` is injected by the agent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Get the learned house style",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "correct_house_style",
+   "title": "Correct the learned house style",
+   "description": "Correct something in the learned house style \u2014 the customer's own words win.\n\n`corrections` maps a field to its corrected value, e.g.\n`{\"header_table_fields\": [\"Case\", \"Role\", \"User story\", \"When\", \"Then\", \"Priority\"]}`\nor `{\"baseline_rule\": \"always start from the current screen\"}`. A corrected style\nis never silently overwritten by a later re-learn. `user_id` is injected by the\nagent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "corrections": {
+      "additionalProperties": true,
+      "type": "object"
+     }
+    },
+    "required": [
+     "corrections"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Correct the learned house style",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "forget_house_style",
+   "title": "Forget the learned house style",
+   "description": "Delete the learned house style for this client. `user_id` is injected.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Forget the learned house style",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": true,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  },
+  {
+   "name": "publish_story_to_confluence",
+   "title": "Publish a story to Confluence",
+   "description": "Publish a story to Confluence as a page in the client's own house-style format\n(header table, change bullets, field specification table), optionally linked to a\nJira issue. Confirm with the user before calling \u2014 this publishes to their wiki.\n`user_id` is injected by the agent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "story_markdown": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "linked_issue": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "parent_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     },
+     "space_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    },
+    "required": [
+     "story_markdown",
+     "title"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "type": "object",
+    "x-fastmcp-wrap-result": true
+   },
+   "annotations": {
+    "title": "Publish a story to Confluence",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   },
+   "meta": {
+    "fastmcp": {
+     "tags": []
+    }
+   }
+  }
+ ]
+}
