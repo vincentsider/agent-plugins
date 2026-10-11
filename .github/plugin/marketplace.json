@@ -13,7 +13,7 @@
       "version": "1.0.0",
       "source": "prodigo",
       "description": "Prodigo for Pega",
-      "repository": "https://github.com/prodigo-ai/agent-plugins"
+      "repository": "https://github.com/vincentsider/agent-plugins"
     }
   ]
 }

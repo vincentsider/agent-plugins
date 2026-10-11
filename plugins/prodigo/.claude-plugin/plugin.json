@@ -9,7 +9,7 @@
     "email": "plugins@prodigo.ai"
   },
   "homepage": "https://prodigo.ai/plugin",
-  "repository": "https://github.com/prodigo-ai/agent-plugins",
+  "repository": "https://github.com/vincentsider/agent-plugins",
   "license": "Apache-2.0",
   "keywords": [
     "pega",

@@ -15,11 +15,11 @@ respective owners.
 
 | Host | Commands |
 |---|---|
-| Claude Code | `claude plugin marketplace add prodigo-ai/agent-plugins` then `claude plugin install prodigo@prodigo` |
-| Codex CLI / ChatGPT desktop | `codex plugin marketplace add prodigo-ai/agent-plugins` then `codex plugin add prodigo@prodigo` (or `/plugins`) |
-| GitHub Copilot CLI | `copilot plugin marketplace add prodigo-ai/agent-plugins` then `copilot plugin install prodigo@prodigo` |
+| Claude Code | `claude plugin marketplace add vincentsider/agent-plugins` then `claude plugin install prodigo@prodigo` |
+| Codex CLI / ChatGPT desktop | `codex plugin marketplace add vincentsider/agent-plugins` then `codex plugin add prodigo@prodigo` (or `/plugins`) |
+| GitHub Copilot CLI | `copilot plugin marketplace add vincentsider/agent-plugins` then `copilot plugin install prodigo@prodigo` |
 | Cursor | copy `plugins/prodigo` into your plugins folder (root `plugin.json` is Agent Plugins 1.0) |
-| OpenClaw | `openclaw plugins install prodigo --marketplace github.com/prodigo-ai/agent-plugins` |
+| OpenClaw | `openclaw plugins install prodigo --marketplace github.com/vincentsider/agent-plugins` |
 | claude.ai, Claude Desktop, mobile, Cowork | add the custom connector `https://app.prodigo.ai/mcp` (or pick "Prodigo for Pega" in the Connectors Directory once listed) |
 
 After installing, start a new session and ask the assistant to run `prodigo-setup`. The
