@@ -20,7 +20,9 @@ the user's Prodigo workspace over an authenticated connection.
 ## Step 2: list what this account can do
 
 Call `list_capabilities`. It returns booleans for `jira`, `confluence`, `pega_rules`,
-`pega_service_mcp` and `build_mcp`, plus a `configure_at` URL.
+`pega_service_mcp` and `build_mcp`, plus a `configure_at` URL (the Prodigo web app).
+"Prodigo Settings" below means: open `configure_at`, start or open a conversation, and
+use the settings gear in the conversation header.
 
 | Missing | What the user needs | Where |
 |---|---|---|
