@@ -1,0 +1,9 @@
+Apache License, Version 2.0 (the "License"): https://www.apache.org/licenses/LICENSE-2.0
+
+Copyright 2026 Prodigo (Lyance)
+
+This licence covers the plugin package in this directory (skills, manifests, rules, agents
+and evals). The Prodigo service the package connects to is proprietary and governed by
+https://prodigo.ai/terms. Pegasystems, Pega, and the Pega logo are trademarks or registered
+trademarks of Pegasystems Inc. and/or its affiliates; Prodigo is not affiliated with or
+endorsed by Pegasystems. All other trademarks are the property of their respective owners.

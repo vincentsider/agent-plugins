@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "prodigo": {
+      "type": "http",
+      "url": "https://app.prodigo.ai/mcp"
+    }
+  }
+}

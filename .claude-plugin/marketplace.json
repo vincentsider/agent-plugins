@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "prodigo",
+  "description": "Prodigo plugins for Pega delivery teams.",
+  "owner": {
+    "name": "Prodigo",
+    "email": "plugins@prodigo.ai",
+    "url": "https://prodigo.ai"
+  },
+  "plugins": [
+    {
+      "name": "prodigo",
+      "source": "./plugins/prodigo",
+      "description": "Prodigo for Pega",
+      "version": "1.0.0",
+      "category": "Development",
+      "repository": "https://github.com/prodigo-ai/agent-plugins"
+    }
+  ]
+}

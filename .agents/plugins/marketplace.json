@@ -1,0 +1,21 @@
+{
+  "name": "prodigo",
+  "interface": {
+    "displayName": "Prodigo"
+  },
+  "plugins": [
+    {
+      "name": "prodigo",
+      "version": "1.0.0",
+      "source": {
+        "source": "local",
+        "path": "./plugins/prodigo"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

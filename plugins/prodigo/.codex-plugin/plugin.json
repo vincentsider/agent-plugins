@@ -1,0 +1,47 @@
+{
+  "name": "prodigo",
+  "version": "1.0.0",
+  "description": "Prodigo for Pega: turn Blueprints and ideas into grounded Jira backlogs, write Pega Infinity technical designs, build them into a Pega branch, document existing applications and have an independent judge verify the result, from your coding agent.",
+  "author": {
+    "name": "Prodigo",
+    "url": "https://prodigo.ai",
+    "email": "plugins@prodigo.ai"
+  },
+  "homepage": "https://prodigo.ai/plugin",
+  "repository": "https://github.com/prodigo-ai/agent-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pega",
+    "pega-infinity",
+    "jira",
+    "user-stories",
+    "technical-design",
+    "retrodoc",
+    "judge",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "Prodigo for Pega",
+    "shortDescription": "Grounded Pega delivery: backlog, design, build, document, verify.",
+    "longDescription": "Prodigo connects your coding agent to the Prodigo delivery service for Pega. Skills cover the whole delivery lifecycle: Blueprint to backlog, story quality against your Definition of Ready and house style, Pega Infinity 26 technical designs, builds into an isolated branch through Pega's own Build MCP (never merged by Prodigo), reverse documentation of an existing application, an independent judge that verifies documents and backlogs against the live application, and migration planning. Everything is grounded in the real dependency graph of your Pega application. Connections to Jira, Confluence and Pega are configured on prodigo.ai, never typed into chat. Works with Pega Infinity 24.2 and 26. Prodigo is not affiliated with or endorsed by Pegasystems.",
+    "developerName": "Prodigo",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://prodigo.ai",
+    "privacyPolicyURL": "https://prodigo.ai/privacy",
+    "termsOfServiceURL": "https://prodigo.ai/terms",
+    "defaultPrompt": [
+      "Use Prodigo to turn this Pega Blueprint into a Jira backlog grounded in our application.",
+      "Use Prodigo to write a Pega Infinity technical design for PPT-5589 and build it into a branch.",
+      "Use Prodigo to document our existing Pega application and judge the result."
+    ],
+    "brandColor": "#1F4FD8",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/composer-icon.png"
+  }
+}

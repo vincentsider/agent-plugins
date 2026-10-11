@@ -1,0 +1,19 @@
+{
+  "name": "prodigo",
+  "metadata": {
+    "description": "Prodigo GitHub Copilot plugins.",
+    "pluginRoot": "./plugins"
+  },
+  "owner": {
+    "name": "Prodigo"
+  },
+  "plugins": [
+    {
+      "name": "prodigo",
+      "version": "1.0.0",
+      "source": "prodigo",
+      "description": "Prodigo for Pega",
+      "repository": "https://github.com/prodigo-ai/agent-plugins"
+    }
+  ]
+}

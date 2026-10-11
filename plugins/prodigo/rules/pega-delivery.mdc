@@ -1,0 +1,7 @@
+---
+description: Pega delivery conventions when using Prodigo tools
+alwaysApply: false
+---
+- Pega rule and class names follow Org-App-Work-Case patterns; never invent a ruleset or class, read them from the technical design or the connected application.
+- Builds go to an isolated branch through Prodigo; merging is a human action in Dev Studio.
+- Long Prodigo jobs are polled with get_*_status; do not block on a start_* call.

@@ -1,0 +1,25 @@
+{
+  "name": "prodigo",
+  "version": "1.0.0",
+  "description": "Prodigo for Pega: turn Blueprints and ideas into grounded Jira backlogs, write Pega Infinity technical designs, build them into a Pega branch, document existing applications and have an independent judge verify the result, from your coding agent.",
+  "author": {
+    "name": "Prodigo",
+    "url": "https://prodigo.ai",
+    "email": "plugins@prodigo.ai"
+  },
+  "homepage": "https://prodigo.ai/plugin",
+  "repository": "https://github.com/prodigo-ai/agent-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pega",
+    "pega-infinity",
+    "jira",
+    "user-stories",
+    "technical-design",
+    "retrodoc",
+    "judge",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
+}
